@@ -17,7 +17,7 @@ RECORD_SECONDS = 10
 OUTPUT_FILENAME = "test.wav"
 for_whisper = r"C:\Users\Joseph\Desktop\OpenVerse\sermon.mp3"
 
-def record_audio(seconds=RECORD_SECONDS, filename=OUTPUT_FILENAME):
+def record_audio():
     audio = pyaudio.PyAudio()
 
     stream = audio.open(
@@ -28,10 +28,10 @@ def record_audio(seconds=RECORD_SECONDS, filename=OUTPUT_FILENAME):
         frames_per_buffer=CHUNK
     )
 
-    print(f"Recording for {seconds} seconds...")
+    print(f"Recording for {RECORD_SECONDS} seconds...")
 
     frames = []
-    for _ in range(0, int(RATE / CHUNK * seconds)):
+    for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
         data = stream.read(CHUNK)
         frames.append(data)
 
@@ -41,18 +41,17 @@ def record_audio(seconds=RECORD_SECONDS, filename=OUTPUT_FILENAME):
     stream.close()
     audio.terminate()
 
-    with wave.open(filename, "wb") as wf:
+    with wave.open(OUTPUT_FILENAME, "wb") as wf:
         wf.setnchannels(CHANNELS)
         wf.setsampwidth(audio.get_sample_size(FORMAT))
         wf.setframerate(RATE)
         wf.writeframes(b"".join(frames))
 
-    print(f"Saved to {filename}")
-    return filename
+    print(f"Saved to {OUTPUT_FILENAME}")
 
-def transcribe_audio(filename, model_name="small"):
-    print(f"Loading Whisper {model_name} model...")
-    model= whisper.load_model(model_name)
+def transcribe_audio(filename):
+    print("Loading Whisper base model...")
+    model= whisper.load_model('small')
 
     print("Transcribing....")
     result= model.transcribe(filename)
@@ -60,7 +59,6 @@ def transcribe_audio(filename, model_name="small"):
     print("\n--- Transcription Result ---")
     print(result["text"])
     print("------------------------------")
-    return result  # full dict incl. "segments" with start/end times
 
 if __name__ == "__main__":
     record_audio()
