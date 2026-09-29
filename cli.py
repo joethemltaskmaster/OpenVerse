@@ -84,7 +84,7 @@ def _finish(refs, args, transcript=None, segments=None):
 def _run_audio(ra, path, args):
     if not os.path.isfile(path):
         sys.exit(f"[error] audio file not found: {path}")
-    result = ra.transcribe_audio(path, model_name=args.model)
+    result = ra.transcrib_audio(path, model_name=args.model, mode=args.mode)
     if not result or "segments" not in result:
         sys.exit("[error] transcribe_audio() returned no segments — is the patched record_audio.py in use?")
     _finish(_detect_segments(result), args, result.get("text"), result["segments"])
@@ -122,7 +122,9 @@ def build_parser():
     common.add_argument("--show-transcript", action="store_true")
 
     audio_common = argparse.ArgumentParser(add_help=False)
-    audio_common.add_argument("--model", default="small", help="whisper model (tiny/base/small/...)")
+    audio_common.add_argument("--model", default="small", help="LOCAL fallback whisper model (tiny/base/small/...)")
+    audio_common.add_argument("--mode", choices=["auto", "remote", "local"], default="auto",
+                              help="auto = Colab GPU with local CPU fallback (default)")
 
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -149,3 +151,5 @@ def build_parser():
 if __name__ == "__main__":
     args = build_parser().parse_args()
     args.func(args)
+
+# path, model_name=args.model, mode=args.mode

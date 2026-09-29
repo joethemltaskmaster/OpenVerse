@@ -1,12 +1,13 @@
 import pyaudio
 import wave
-import whisper
+# import whisper
+from faster_whisper import WhisperModel
 import os
 # import subprocess
 
 # print(subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True).stdout)
 
-os.environ["PATH"] += os.pathsep + r"C:\ffmpeg\bin"
+# os.environ["PATH"] += os.pathsep + r"C:\ffmpeg\bin"
 
 # Recording settings
 FORMAT = pyaudio.paInt16   # 16-bit resolution
@@ -50,18 +51,29 @@ def record_audio(seconds=RECORD_SECONDS, filename=OUTPUT_FILENAME):
     print(f"Saved to {filename}")
     return filename
 
-def transcribe_audio(filename, model_name="small"):
-    print(f"Loading Whisper {model_name} model...")
-    model= whisper.load_model(model_name)
+def transcrib_audio(filename, model_name="small", mode="auto", language="en"):
+    from transcription import transcribe_audio
+    return transcribe_audio(filename=filename, model_name=model_name, mode=mode, language=language)
+    # import ctranslate2
 
-    print("Transcribing....")
-    result= model.transcribe(filename)
+    # use_gpu = ctranslate2.get_cuda_device_count() > 0
+    # device = "cuda" if use_gpu else "cpu"
+    # compute_type = "float16" if use_gpu else "int8"
 
-    print("\n--- Transcription Result ---")
-    print(result["text"])
-    print("------------------------------")
-    return result  # full dict incl. "segments" with start/end times
+    # print(f"Loading faster-whisper {model_name} on {device}...")
+    # model = WhisperModel(model_name, device=device, compute_type=compute_type)
+
+    # print("Transcribing....")
+    # segments, info = model.transcribe(filename, language=language, vad_filter=True)
+    # segs = [{"start": s.start, "end": s.end, "text": s.text} for s in segments]
+    # text = "".join(s["text"] for s in segs).strip()
+
+    # print("\n--- Transcription Result ---")
+    # print(text)
+    # print("------------------------------")
+    # return {"text": text, "segments": segs}
 
 if __name__ == "__main__":
-    record_audio()
-    transcribe_audio(for_whisper)
+    # record_audio()
+    from transcription import transcribe_audio
+    transcrib_audio(for_whisper)

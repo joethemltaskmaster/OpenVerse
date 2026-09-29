@@ -20,8 +20,8 @@ pass, updating parser state incrementally as we go.
 import re
 from typing import List, Optional
 
-from bible_books import normalize_book_name, is_valid_chapter
-from models import ScriptureReference
+from scripture_detector.bible_books import normalize_book_name, is_valid_chapter
+from scripture_detector.models import ScriptureReference
 
 STOPWORDS = {
     "to", "at", "in", "from", "read", "turn", "turning", "open", "opening",

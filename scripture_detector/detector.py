@@ -18,9 +18,9 @@ text, so references split across segment boundaries still match:
 from bisect import bisect_right
 from typing import List, Optional
 
-from normalizer import normalize_transcript
-from parser import ReferenceParser
-from models import ScriptureReference
+from scripture_detector.normalizer import normalize_transcript
+from scripture_detector.parser import ReferenceParser
+from scripture_detector.models import ScriptureReference
 
 
 class ScriptureDetector:
