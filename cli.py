@@ -75,10 +75,37 @@ def _finish(refs, args, transcript=None, segments=None):
     print("\n--- detected references ---")
     _print_refs(refs, args.show_transcript)
     print(f"\n{len(refs)} reference(s) found.")
+
+    events = None
+    if args.with_text and refs:
+        events = _resolve_verse_events(refs, args.wpm)
+        print("\n--- verse text (paced) ---")
+        for e in events:
+            tag = "real" if e.timing_source == "real" else "est. "
+            print(f"  {_fmt_time(e.display_at):>7} [{tag}]  {e.book} {e.chapter}:{e.verse}")
+            print(f"           {e.text}")
+
     if args.json:
+        payload = [r.to_dict() for r in refs]
+        if events is not None:
+            payload = {
+                "references": payload,
+                "verse_events": [
+                    {"book": e.book, "chapter": e.chapter, "verse": e.verse, "text": e.text,
+                     "display_at": e.display_at, "timing_source": e.timing_source}
+                    for e in events
+                ],
+            }
         with open(args.json, "w", encoding="utf-8") as f:
-            json.dump([r.to_dict() for r in refs], f, indent=2)
+            json.dump(payload, f, indent=2)
         print(f"Saved to {args.json}")
+
+
+def _resolve_verse_events(refs, wpm):
+    from lookup.version_lookup import VersionLookup
+    from lookup.verse_presenter import VersePresenter
+    presenter = VersePresenter(VersionLookup(), words_per_minute=wpm)
+    return presenter.expand(refs)
 
 
 def _run_audio(ra, path, args):
@@ -120,6 +147,10 @@ def build_parser():
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--json", metavar="FILE", help="save results as JSON")
     common.add_argument("--show-transcript", action="store_true")
+    common.add_argument("--with-text", action="store_true",
+                        help="resolve and print actual KJV verse text, one verse per line")
+    common.add_argument("--wpm", type=int, default=150,
+                        help="reading pace used ONLY for estimated timing within a spoken range (default 150)")
 
     audio_common = argparse.ArgumentParser(add_help=False)
     audio_common.add_argument("--model", default="small", help="LOCAL fallback whisper model (tiny/base/small/...)")
@@ -151,5 +182,3 @@ def build_parser():
 if __name__ == "__main__":
     args = build_parser().parse_args()
     args.func(args)
-
-# path, model_name=args.model, mode=args.mode

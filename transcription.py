@@ -61,7 +61,7 @@ def _transcribe_remote(filename, language, url, token):
                 kind = msg.get("type")
                 if kind == "segment":
                     segs.append({"start": msg["start"], "end": msg["end"], "text": msg["text"]})
-                    f"  [{msg['start']:7.1f}s] {msg['text'].strip()}"
+                    print(f"  [{msg['start']:7.1f}s] {msg['text'].strip()}")
                 elif kind == "error":
                     raise RuntimeError(f"server error: {msg['message']}")
                 elif kind == "done":

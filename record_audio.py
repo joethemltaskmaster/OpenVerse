@@ -16,7 +16,7 @@ RATE = 44100                 # samples per second
 CHUNK = 1024                 # buffer size
 RECORD_SECONDS = 10
 OUTPUT_FILENAME = "test.wav"
-for_whisper = r"C:\Users\Joseph\Desktop\OpenVerse\sermon.mp3"
+for_whisper = r"C:\Users\Joseph\Desktop\OpenVerse\sermon_1.mp3"
 
 def record_audio(seconds=RECORD_SECONDS, filename=OUTPUT_FILENAME):
     audio = pyaudio.PyAudio()
@@ -75,5 +75,5 @@ def transcrib_audio(filename, model_name="small", mode="auto", language="en"):
 
 if __name__ == "__main__":
     # record_audio()
-    from transcription import transcribe_audio
+    # from transcription import transcribe_audio
     transcrib_audio(for_whisper)

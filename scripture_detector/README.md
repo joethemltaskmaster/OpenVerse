@@ -62,9 +62,6 @@ for seg in whisper_result["segments"]:
 - **Single-chapter books** (Jude, Obadiah, Philemon, 2 John, 3 John) are
   only matched when a chapter number is explicitly spoken or a colon is
   used — "Jude verse 3" alone isn't yet special-cased to mean "chapter 1".
-- When a full match is chapter-invalid and rejected, a verse-only mention
-  inside that same span can still fall through to context inheritance
-  from an *earlier* valid reference. Rare in practice, but worth knowing.
 - STOPWORDS list (words excluded from book-name capture) is a starting
   set — extend it as you find real transcripts where a filler word
   leaks into a match.
@@ -77,3 +74,49 @@ for seg in whisper_result["segments"]:
 3. If disfluent/self-corrected speech ("John — sorry, First John —
    chapter 2") turns out to be common, add a low-confidence-span escalation
    to an LLM verification pass rather than trying to handle it in regex.
+
+## Verse text (VersionLookup + VersePresenter)
+
+`version_lookup.py` bundles a full KJV dataset (`kjv.json`, ~4.3 MB) keyed
+by the exact canonical book names in `bible_books.py` — validated at
+import time: 66/66 books, chapter counts matching `CHAPTER_COUNTS`
+exactly, 31,102 verses total. `VersionLookup` only retrieves text; it
+knows nothing about timing or display.
+
+`verse_presenter.py` explodes a `ScriptureReference` into individual
+`VerseEvent`s (one per verse) with a `display_at` time. **Golden rule:
+a real timestamp always wins.** Concretely:
+- Several separate detector hits (e.g. "verse 1" then later "verse 2",
+  each its own reference with its own real Whisper timestamp) keep
+  their real timestamps untouched — nothing is estimated.
+- One reference covering a spoken range ("verse 1 to 2" said once) has
+  exactly one real timestamp, for verse 1. Verse 2 has no real moment to
+  anchor to, so its `display_at` is estimated from reading pace
+  (`words_per_minute`, default 150, floored at `min_gap_seconds`).
+
+Every `VerseEvent.timing_source` is `"real"` or `"estimated"` — check it
+rather than assuming.
+
+Use `--with-text` on any CLI mode to resolve and print verse text, paced
+by this logic (`--wpm` to change the reading-pace estimate). `--json`
+then includes a `verse_events` array alongside `references`.
+
+## CLI
+```
+python scripture_detector/cli.py text "Turn to 2 John chapter 1 verse 3 to 8"
+python scripture_detector/cli.py file transcript.txt
+python scripture_detector/cli.py audio                # transcribes for_whisper (sermon.mp3)
+python scripture_detector/cli.py audio other.mp3 --model base
+python scripture_detector/cli.py record --seconds 30  # mic -> test.wav -> transcribe -> detect
+```
+Add `--json out.json` to save results and `--show-transcript` to see the
+timestamped Whisper segments plus each raw match. Audio modes call
+`ScriptureDetector.detect_segments`, which joins the segments into one
+text (so a reference split across a segment boundary still matches) and
+maps each match back to the segment where it begins.
+
+`cli.py` imports `record_audio.py` from the parent folder, so keep
+`scripture_detector/` inside `OpenVerse/`. The included `record_audio.py`
+is your original with `transcribe_audio()` now returning the Whisper
+result, and `record_audio()` / `transcribe_audio()` accepting optional
+seconds/filename/model arguments (defaults unchanged).
