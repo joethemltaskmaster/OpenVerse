@@ -92,7 +92,8 @@ def _finish(refs, args, transcript=None, segments=None):
                 "references": payload,
                 "verse_events": [
                     {"book": e.book, "chapter": e.chapter, "verse": e.verse, "text": e.text,
-                     "display_at": e.display_at, "timing_source": e.timing_source}
+                     "display_at": e.display_at, "timing_source": e.timing_source,
+                     "duration_estimate": e.duration_estimate}
                     for e in events
                 ],
             }

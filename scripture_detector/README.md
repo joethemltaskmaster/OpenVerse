@@ -120,3 +120,27 @@ maps each match back to the segment where it begins.
 is your original with `transcribe_audio()` now returning the Whisper
 result, and `record_audio()` / `transcribe_audio()` accepting optional
 seconds/filename/model arguments (defaults unchanged).
+
+## Display layer (prototype)
+
+`display/scripture_display.html` is the Display stage: `VerseEvent` -> screen.
+It does no detection, lookup, or timing math of its own — it only reads the
+`verse_events` array (from `cli.py --with-text --json out.json`) and shows
+each verse when its `display_at` time arrives, on the client's own clock
+starting from when you click **Start**.
+
+Usage:
+1. Generate events: `python cli.py audio --with-text --json events.json`
+2. Open `display/scripture_display.html` in a browser (double-clicking it works).
+3. Hover the bottom edge for controls, load `events.json`, click **Start**.
+
+A small dot in the top-right shows real (green) vs estimated (amber) timing
+for whichever verse is on screen — a passive indicator, not something that
+changes playback behavior.
+
+This is a manual-load prototype, not a live feed: you load a JSON file after
+a batch run rather than the page polling a running server. A live version
+(during an actual sermon) would swap the file-load step for `fetch()` on an
+interval or a WebSocket — same rendering/scheduling code, different input
+source, since the page's whole job is to consume `VerseEvent`s from wherever
+they come from.

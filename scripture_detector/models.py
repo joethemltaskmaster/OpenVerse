@@ -46,9 +46,10 @@ class VerseEvent:
     chapter: int
     verse: int
     text: str
-    display_at: float                       # seconds into the transcript
+    display_at: float                       # seconds into playback, normalized so the first event is 0
     timing_source: Literal["real", "estimated"]
     source_ref: "ScriptureReference"         # the reference this was expanded from
+    duration_estimate: Optional[float] = None  # informational: est. reading time for THIS verse, seconds
 
     @property
     def is_estimated_timing(self) -> bool:

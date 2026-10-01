@@ -1,0 +1,82 @@
+{
+  "references": [
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse_start": 1,
+      "verse_end": 1,
+      "raw_text": "deuteronomy chapter 28, verse 1",
+      "confidence": 1.0,
+      "timestamp": 12.4,
+      "inferred_from_context": false
+    },
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse_start": 2,
+      "verse_end": 2,
+      "raw_text": "verse 2",
+      "confidence": 1.0,
+      "timestamp": 16.44,
+      "inferred_from_context": true
+    },
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse_start": 1,
+      "verse_end": 1,
+      "raw_text": "verse 1",
+      "confidence": 1.0,
+      "timestamp": 18.44,
+      "inferred_from_context": true
+    },
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse_start": 2,
+      "verse_end": 2,
+      "raw_text": "verse 2",
+      "confidence": 1.0,
+      "timestamp": 20.04,
+      "inferred_from_context": true
+    }
+  ],
+  "verse_events": [
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse": 1,
+      "text": "And it shall come to pass, if thou shalt hearken diligently unto the voice of the LORD thy God, to observe and to do all his commandments which I command thee this day, that the LORD thy God will set thee on high above all nations of the earth:",
+      "display_at": 0.0,
+      "timing_source": "real",
+      "duration_estimate": 196.0
+    },
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse": 2,
+      "text": "And all these blessings shall come on thee, and overtake thee, if thou shalt hearken unto the voice of the LORD thy God.",
+      "display_at": 4.040000000000001,
+      "timing_source": "real",
+      "duration_estimate": 92.0
+    },
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse": 1,
+      "text": "And it shall come to pass, if thou shalt hearken diligently unto the voice of the LORD thy God, to observe and to do all his commandments which I command thee this day, that the LORD thy God will set thee on high above all nations of the earth:",
+      "display_at": 6.040000000000001,
+      "timing_source": "real",
+      "duration_estimate": 196.0
+    },
+    {
+      "book": "deuteronomy",
+      "chapter": 28,
+      "verse": 2,
+      "text": "And all these blessings shall come on thee, and overtake thee, if thou shalt hearken unto the voice of the LORD thy God.",
+      "display_at": 7.639999999999999,
+      "timing_source": "real",
+      "duration_estimate": 92.0
+    }
+  ]
+}
