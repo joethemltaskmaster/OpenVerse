@@ -23,6 +23,22 @@
     overflow: hidden;
   }
 
+  /* -- top-left logo. Sized by viewport height so it scales between a
+     laptop preview and a large projector without a media query. Max
+     height is capped at 56px so it stays discreet on big screens. -- */
+  #logo {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    height: clamp(73px, 5vh, 100px);
+    width: auto;
+    opacity: 0.9;
+    pointer-events: none;   /* never intercept clicks meant for the page */
+    z-index: 5;
+    user-select: none;
+  }
+  #logo.hidden { display: none; }
+
   /* -- presentation stage -- */
   #stage {
     height: 100%;
@@ -31,7 +47,10 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 6vh 8vw;
+    /* top padding reserves a clear corridor for the logo (18px offset
+       + up to 56px logo + 10px breathing room = 84px floor) so a long
+       reference line on a short viewport still can't collide with it */
+    padding: max(6vh, 84px) 8vw 6vh;
   }
   #reference {
     font-size: clamp(1.4rem, 3vw, 2.4rem);
@@ -74,8 +93,7 @@
   #timing-dot.real { background: var(--real); }
   #timing-dot.estimated { background: var(--estimated); }
 
-  /* -- control bar: hidden until hovered near the bottom, keeps the
-     presentation screen clean the rest of the time -- */
+  /* -- control bar: hidden until hovered near the bottom -- */
   #controls {
     position: fixed;
     left: 0; right: 0; bottom: 0;
@@ -109,9 +127,25 @@
   #controls button:disabled { opacity: 0.4; cursor: default; }
   #controls input[type=file] { display: none; }
   #status { color: var(--dim); margin-left: auto; }
+
+  #controls .nav-group {
+    display: flex;
+    gap: 6px;
+    padding-left: 4px;
+    border-left: 1px solid rgba(255,255,255,0.15);
+    margin-left: 4px;
+  }
 </style>
 </head>
 <body>
+
+  <!-- Top-left logo. Adjust src if your file has a different name or
+       extension. If the file is missing, the onerror handler below
+       hides the broken-image glyph so nothing ugly hits the projector. -->
+  <img id="logo"
+       src="C:\Users\Joseph\Desktop\OpenVerse\cac_logo.jpg"
+       alt=""
+       onerror="this.classList.add('hidden')">
 
   <div id="timing-dot" title="real vs estimated timing"></div>
 
@@ -127,21 +161,21 @@
     <input id="file-input" type="file" accept="application/json">
     <button id="start-btn" disabled>Start</button>
     <button id="pause-btn" disabled>Pause</button>
+    <span class="nav-group">
+      <button id="prev-btn" disabled title="Previous verse (← arrow)">◀ Prev</button>
+      <button id="next-btn" disabled title="Next verse (→ arrow)">Next ▶</button>
+    </span>
     <button id="restart-btn" disabled>Restart</button>
     <span id="status">No file loaded</span>
   </div>
 
 <script>
 /*
- * This file is a PRESENTATION LAYER ONLY.
- * It does not detect scripture, look up verse text, or compute timing —
- * all of that already happened upstream (ScriptureDetector, VersionLookup,
- * VersePresenter). This page's only job is: given a list of VerseEvent
- * objects, show the right one at the right time.
- *
- * Expected input shape (either is accepted):
+ * PRESENTATION LAYER ONLY.
+ * Given a list of VerseEvent objects, show the right one at the right time.
+ * Expected input:
  *   { "verse_events": [ {book, chapter, verse, text, display_at, timing_source}, ... ] }
- *   [ {book, chapter, verse, text, display_at, timing_source}, ... ]
+ *   or a bare array of the same objects.
  */
 
 const stage = document.getElementById('stage');
@@ -152,27 +186,23 @@ const timingDot = document.getElementById('timing-dot');
 const statusEl = document.getElementById('status');
 const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
 const restartBtn = document.getElementById('restart-btn');
 const fileInput = document.getElementById('file-input');
 
-let events = [];       // sorted VerseEvent list
+let events = [];
 let playing = false;
-let startWallClock = null;   // performance.now() when playback started
-let pausedElapsed = 0;       // elapsed seconds banked across pauses
+let startWallClock = null;
+let pausedElapsed = 0;
 let currentIndex = -1;
 let rafHandle = null;
 
 function bookTitle(book) {
-  // canonical names from bible_books.py are lowercase ("1 john",
-  // "song of solomon"); title-case each word for display only —
-  // this is purely cosmetic, not a second naming system.
   return book.replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function loadEvents(parsed) {
-  // Fail loudly here if the stage elements are missing, rather than
-  // silently at play time inside the RAF loop (where an exception kills
-  // the loop and nothing renders).
   if (!referenceEl || !verseTextEl) {
     throw new Error(
       "Stage elements missing — #reference or #verse-text not found in the page."
@@ -201,6 +231,7 @@ function loadEvents(parsed) {
   startBtn.disabled = events.length === 0;
   pauseBtn.disabled = true;
   restartBtn.disabled = events.length === 0;
+  updateNavButtons();
 }
 
 function showEvent(ev) {
@@ -209,7 +240,6 @@ function showEvent(ev) {
   timingDot.className = ev.timing_source === 'real' ? 'real'
                        : ev.timing_source === 'estimated' ? 'estimated' : '';
   stage.classList.remove('visible');
-  // brief pause so the fade-out/fade-in reads as a transition, not a snap
   requestAnimationFrame(() => requestAnimationFrame(() => stage.classList.add('visible')));
 }
 
@@ -218,11 +248,52 @@ function elapsedSeconds() {
   return pausedElapsed + (performance.now() - startWallClock) / 1000;
 }
 
+function updateNavButtons() {
+  if (events.length === 0) {
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+  prevBtn.disabled = currentIndex <= 0;
+  nextBtn.disabled = currentIndex >= events.length - 1;
+}
+
+function seekToVerse(index) {
+  if (index < 0 || index >= events.length) return;
+
+  cancelAnimationFrame(rafHandle);
+
+  const targetTime = events[index].display_at;
+  pausedElapsed = targetTime;
+  if (playing) {
+    startWallClock = performance.now();
+  }
+
+  currentIndex = index;
+  showEvent(events[index]);
+  statusEl.textContent = `Verse ${index + 1} of ${events.length}`;
+  updateNavButtons();
+
+  if (playing) {
+    rafHandle = requestAnimationFrame(tick);
+  }
+}
+
+function prevVerse() {
+  if (currentIndex <= 0) return;
+  seekToVerse(currentIndex - 1);
+}
+
+function nextVerse() {
+  const target = currentIndex + 1;
+  if (target >= events.length) return;
+  seekToVerse(target);
+}
+
 function tick() {
   if (!playing) return;
   const elapsed = elapsedSeconds();
 
-  // advance to the latest event whose display_at has arrived
   let next = currentIndex;
   while (next + 1 < events.length && events[next + 1].display_at <= elapsed) {
     next += 1;
@@ -231,18 +302,17 @@ function tick() {
     currentIndex = next;
     showEvent(events[currentIndex]);
     statusEl.textContent = `Verse ${currentIndex + 1} of ${events.length}`;
+    updateNavButtons();
   } else if (currentIndex + 1 < events.length) {
-    // nothing shown yet (or between verses) — make the wait visible so a
-    // long gap before the first real timestamp never looks like "stuck"
     const remaining = (events[currentIndex + 1].display_at - elapsed).toFixed(1);
     statusEl.textContent = `Waiting — next verse in ${remaining}s`;
   }
 
   if (currentIndex >= events.length - 1) {
-    // last event shown — nothing left to schedule, stop the loop
     playing = false;
     pauseBtn.disabled = true;
     startBtn.disabled = true;
+    updateNavButtons();
     return;
   }
   rafHandle = requestAnimationFrame(tick);
@@ -276,6 +346,7 @@ function restart() {
   startBtn.disabled = events.length === 0;
   pauseBtn.disabled = true;
   statusEl.textContent = `${events.length} verse event(s) loaded`;
+  updateNavButtons();
 }
 
 fileInput.addEventListener('change', () => {
@@ -294,7 +365,16 @@ fileInput.addEventListener('change', () => {
 
 startBtn.addEventListener('click', start);
 pauseBtn.addEventListener('click', pause);
+prevBtn.addEventListener('click', prevVerse);
+nextBtn.addEventListener('click', nextVerse);
 restartBtn.addEventListener('click', restart);
+
+document.addEventListener('keydown', (e) => {
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); prevVerse(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); nextVerse(); }
+});
 </script>
 </body>
 </html>
