@@ -6,11 +6,23 @@
   <component name="ChangeListManager">
     <list default="true" id="bd95f825-b8d0-4ca7-b53f-1c45ec10a2a0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lookup/verse_presenter.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/record_audio_old.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/save.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sermon_3.mp3" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
