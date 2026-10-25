@@ -3,7 +3,13 @@ from __future__ import annotations
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QCheckBox, QHBoxLayout, QLabel, QListWidget, QPushButton, QVBoxLayout, QWidget,
+    QCheckBox,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 

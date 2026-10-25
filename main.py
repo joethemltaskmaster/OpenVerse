@@ -9,7 +9,7 @@ import sys
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
-from lookup.verse_presenter import VersePresenter
+from presentation.verse_presenter import VersePresenter
 from presentation.verse_splitter import split_long_verses
 from lookup.version_lookup import VersionLookup
 from playback.controller import PlaybackController
@@ -23,7 +23,7 @@ from transcription import transcribe_audio
 log = logging.getLogger(__name__)
 
 # Set to a file path for file mode; None = live mic.
-AUDIO_SOURCE: str | None = None
+AUDIO_SOURCE: str | None = r"C:\Users\Joseph\Desktop\OpenVerse\sermon.mp3"
 # AUDIO_SOURCE = r"C:\Users\Joseph\Desktop\OpenVerse\sermon_1.mp3"
 
 

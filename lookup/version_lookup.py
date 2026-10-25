@@ -17,7 +17,10 @@ import json
 import os
 from typing import List, Optional, Tuple
 
-from scripture_detector.bible_books import CHAPTER_COUNTS
+from scripture_detector.bible_books import (
+    CHAPTER_COUNTS,
+    normalize_book_name,
+)
 
 _DEFAULT_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kjv.json")
 
@@ -53,12 +56,15 @@ class VersionLookup:
                 )
 
     def verse(self, book: str, chapter: int, verse: int) -> str:
-        """book must already be a canonical name from bible_books.py
-        (e.g. via bible_books.normalize_book_name)."""
+        """Retrieve a verse using the canonical book name."""
+        canonical_book = normalize_book_name(book)
+
         try:
-            return self._data[book][str(chapter)][str(verse)]
+            return self._data[canonical_book][str(chapter)][str(verse)]
         except KeyError as e:
-            raise VerseNotFoundError(f"{book} {chapter}:{verse} not found in {self.version}") from e
+            raise VerseNotFoundError(
+                f"{canonical_book} {chapter}:{verse} not found in {self.version}"
+            ) from e
 
     def verse_range(
         self, book: str, chapter: int, verse_start: int, verse_end: Optional[int] = None
